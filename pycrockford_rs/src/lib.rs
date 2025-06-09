@@ -2,9 +2,14 @@
 
 use data_encoding::{Encoding, Specification};
 use once_cell::sync::Lazy;
+use pyo3::basic::CompareOp;
 use pyo3::exceptions::PyValueError;
+use pyo3::once_cell::GILOnceCell;
 use pyo3::prelude::*;
-use pyo3::types::{PyAny, PyBytes, PyString, PyType};
+use pyo3::pycell::PyRef;
+use pyo3::types::{PyAny, PyBytes, PyDict, PyModule, PyString, PyType};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 use uuid::Uuid;
 
 #[derive(Debug)]
@@ -32,6 +37,14 @@ static CROCKFORD: Lazy<Encoding> = Lazy::new(|| {
     spec.ignore.push('-');
     spec.encoding().unwrap()
 });
+
+// Cache the 'uuid' module to avoid repeated imports at runtime.
+fn uuid_module(py: Python<'_>) -> PyResult<&PyModule> {
+    static UUID_MODULE: GILOnceCell<Py<PyModule>> = GILOnceCell::new();
+    let module =
+        UUID_MODULE.get_or_try_init(py, || PyModule::import(py, "uuid").map(|m| m.into()))?;
+    Ok(module.as_ref(py))
+}
 
 pub fn encode_bytes_to_crockford(bytes: &[u8; 16]) -> String {
     CROCKFORD.encode(bytes)
@@ -86,7 +99,8 @@ impl CrockfordUUID {
             let mut arr = [0u8; 16];
             arr.copy_from_slice(slice);
             Ok(Self { bytes: arr })
-        } else if let Ok(uuid_mod) = value.py().import("uuid") {
+        } else {
+            let uuid_mod = uuid_module(value.py())?;
             if value.is_instance(uuid_mod.getattr("UUID")?)? {
                 let py_bytes: &PyBytes = value.getattr("bytes")?.extract()?;
                 let slice = py_bytes.as_bytes();
@@ -98,10 +112,6 @@ impl CrockfordUUID {
                     "expected Crockford string, 16 bytes, or uuid.UUID",
                 ))
             }
-        } else {
-            Err(PyValueError::new_err(
-                "expected Crockford string, 16 bytes, or uuid.UUID",
-            ))
         }
     }
 
@@ -112,10 +122,11 @@ impl CrockfordUUID {
 
     #[getter]
     fn uuid(&self, py: Python) -> PyResult<PyObject> {
-        let uuid_mod = py.import("uuid")?;
+        let uuid_mod = uuid_module(py)?;
         let uuid_cls = uuid_mod.getattr("UUID")?;
-        let py_bytes = PyBytes::new(py, &self.bytes);
-        uuid_cls.call1((py_bytes,)).map(Into::into)
+        let kwargs = PyDict::new(py);
+        kwargs.set_item("bytes", PyBytes::new(py, &self.bytes))?;
+        uuid_cls.call((), Some(kwargs)).map(Into::into)
     }
 
     fn __str__(&self) -> String {
@@ -127,6 +138,20 @@ impl CrockfordUUID {
             "CrockfordUUID('{}')",
             encode_bytes_to_crockford(&self.bytes)
         )
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.bytes.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    fn __richcmp__(&self, other: PyRef<Self>, op: CompareOp, py: Python<'_>) -> PyObject {
+        match op {
+            CompareOp::Eq => (self.bytes == other.bytes).into_py(py),
+            CompareOp::Ne => (self.bytes != other.bytes).into_py(py),
+            _ => py.NotImplemented(),
+        }
     }
 
     #[classmethod]

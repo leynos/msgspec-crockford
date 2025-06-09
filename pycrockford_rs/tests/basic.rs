@@ -1,4 +1,4 @@
-use pycrockford_rs::{decode_crockford_to_bytes, encode_bytes_to_crockford};
+use _pycrockford_rs_bindings::{decode_crockford_to_bytes, encode_bytes_to_crockford};
 
 #[test]
 fn round_trip() {
