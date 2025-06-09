@@ -32,8 +32,12 @@ impl std::error::Error for CrockfordError {}
 static CROCKFORD: Lazy<Encoding> = Lazy::new(|| {
     let mut spec = Specification::new();
     spec.symbols.push_str("0123456789ABCDEFGHJKMNPQRSTVWXYZ");
-    spec.translate.from = "iolIOL".into();
-    spec.translate.to = "101101".into();
+    // Accept lowercase input for all allowed characters.
+    spec.translate.from = "abcdefghjkmnpqrstvwxyz".into();
+    spec.translate.to = "ABCDEFGHJKMNPQRSTVWXYZ".into();
+    // Handle visually similar characters per Crockford spec.
+    spec.translate.from.push_str("ilILoO");
+    spec.translate.to.push_str("111100");
     spec.ignore.push('-');
     spec.encoding().unwrap()
 });
@@ -63,16 +67,19 @@ pub fn decode_crockford_to_bytes(s: &str) -> Result<[u8; 16], CrockfordError> {
 }
 
 #[pyfunction]
-fn encode_crockford_py(b: &[u8]) -> PyResult<String> {
+fn encode_crockford(b: &[u8]) -> PyResult<String> {
     if b.len() != 16 {
-        return Err(PyValueError::new_err("input must be exactly 16 bytes"));
+        return Err(PyValueError::new_err(format!(
+            "expected 16 bytes, got {}",
+            b.len()
+        )));
     }
     let arr: &[u8; 16] = b.try_into().unwrap();
     Ok(encode_bytes_to_crockford(arr))
 }
 
 #[pyfunction]
-fn decode_crockford_py(py: Python<'_>, s: &str) -> PyResult<Py<PyBytes>> {
+fn decode_crockford(py: Python<'_>, s: &str) -> PyResult<Py<PyBytes>> {
     let bytes = decode_crockford_to_bytes(s).map_err(|e| PyValueError::new_err(e.to_string()))?;
     Ok(PyBytes::new(py, &bytes).into())
 }
@@ -94,7 +101,10 @@ impl CrockfordUUID {
         } else if let Ok(b) = value.downcast::<PyBytes>() {
             let slice = b.as_bytes();
             if slice.len() != 16 {
-                return Err(PyValueError::new_err("bytes input must be 16 bytes"));
+                return Err(PyValueError::new_err(format!(
+                    "expected 16 bytes, got {}",
+                    slice.len()
+                )));
             }
             let mut arr = [0u8; 16];
             arr.copy_from_slice(slice);
@@ -129,6 +139,10 @@ impl CrockfordUUID {
         uuid_cls.call((), Some(kwargs)).map(Into::into)
     }
 
+    fn __bytes__(&self, py: Python<'_>) -> PyObject {
+        PyBytes::new(py, &self.bytes).into()
+    }
+
     fn __str__(&self) -> String {
         encode_bytes_to_crockford(&self.bytes)
     }
@@ -140,10 +154,14 @@ impl CrockfordUUID {
         )
     }
 
-    fn __hash__(&self) -> u64 {
+    fn __hash__(&self) -> isize {
         let mut hasher = DefaultHasher::new();
         self.bytes.hash(&mut hasher);
-        hasher.finish()
+        let mut value = hasher.finish() as isize;
+        if value == -1 {
+            value = -2;
+        }
+        value
     }
 
     fn __richcmp__(&self, other: PyRef<Self>, op: CompareOp, py: Python<'_>) -> PyObject {
@@ -173,8 +191,8 @@ impl CrockfordUUID {
 
 #[pymodule]
 fn _pycrockford_rs_bindings(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(decode_crockford_py, m)?)?;
-    m.add_function(wrap_pyfunction!(encode_crockford_py, m)?)?;
+    m.add_function(wrap_pyfunction!(decode_crockford, m)?)?;
+    m.add_function(wrap_pyfunction!(encode_crockford, m)?)?;
     m.add_class::<CrockfordUUID>()?;
     Ok(())
 }
