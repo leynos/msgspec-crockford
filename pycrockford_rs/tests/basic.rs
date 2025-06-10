@@ -13,13 +13,13 @@ fn round_trip() {
 #[test]
 fn decode_invalid_length() {
     let err = decode_crockford_to_bytes("ABC").unwrap_err();
-    matches!(err, CrockfordError::InvalidLength(_));
+    assert!(matches!(err, CrockfordError::DecodeError(_)));
 }
 
 #[test]
 fn decode_invalid_character() {
     let err = decode_crockford_to_bytes("********").unwrap_err();
-    matches!(err, CrockfordError::DecodeError(_));
+    assert!(matches!(err, CrockfordError::DecodeError(_)));
 }
 
 #[test]
