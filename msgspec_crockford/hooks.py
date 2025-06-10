@@ -6,7 +6,8 @@ from types import NotImplementedType, UnionType
 
 import msgspec
 
-from _pycrockford_rs_bindings import CrockfordUUID
+from .types import CrockfordUUID
+from .exceptions import CrockfordUUIDError
 
 
 def cuuid_decoder(type_hint: Any, obj: Any) -> CrockfordUUID | NotImplementedType:
@@ -23,7 +24,7 @@ def cuuid_decoder(type_hint: Any, obj: Any) -> CrockfordUUID | NotImplementedTyp
         if isinstance(obj, str):
             try:
                 return CrockfordUUID(obj)
-            except ValueError as exc:  # PyO3 raises PyValueError
+            except CrockfordUUIDError as exc:
                 raise msgspec.ValidationError(str(exc)) from exc
         raise msgspec.ValidationError(
             f"Expected str for CrockfordUUID, got {type(obj).__name__}"
