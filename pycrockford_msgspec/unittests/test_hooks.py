@@ -29,3 +29,10 @@ def test_invalid_decode_raises() -> None:
 def test_hooks_return_not_implemented() -> None:
     assert cuuid_decoder(str, "abc") is NotImplemented
     assert cuuid_encoder("abc") is NotImplemented
+
+
+def test_decoder_optional_handling() -> None:
+    hint = CrockfordUUID | None
+    uuid_obj = CrockfordUUID.generate_v4()
+    assert cuuid_decoder(hint, None) is NotImplemented
+    assert cuuid_decoder(hint, str(uuid_obj)) == uuid_obj
