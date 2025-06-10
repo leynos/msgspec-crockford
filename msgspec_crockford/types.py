@@ -31,7 +31,7 @@ class CrockfordUUID(uuid.UUID):
             raise CrockfordUUIDError(
                 "expected Crockford string, 16 bytes, or uuid.UUID"
             )
-        obj = super().__new__(cls)
+        obj = object.__new__(cls)
         uuid.UUID.__init__(obj, bytes=bytes_value)
         return obj
 
