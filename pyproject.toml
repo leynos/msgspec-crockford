@@ -1,0 +1,18 @@
+[project]
+name = "pycrockford_msgspec"
+version = "0.1.0"
+description = "Crockford Base32 UUID integration for msgspec"
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{name = "Example"}]
+dependencies = ["msgspec>=0.19"]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "pyright", "maturin"]
+
+[build-system]
+requires = ["maturin>=1.8,<2.0"]
+build-backend = "maturin"
+
+[tool.uv]
+package = true
