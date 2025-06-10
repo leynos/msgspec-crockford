@@ -1,6 +1,7 @@
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false, reportGeneralTypeIssues=false, reportArgumentType=false
 from __future__ import annotations
 
+import msgspec
 import pytest
 
 from msgspec_crockford import CrockfordUUID, cuuid_decoder, cuuid_encoder
@@ -14,8 +15,13 @@ def test_encode_decode_round_trip() -> None:
 
 
 def test_invalid_decode_raises() -> None:
-    with pytest.raises(Exception):
+    with pytest.raises(msgspec.ValidationError):
         cuuid_decoder(CrockfordUUID, "not-a-cuuid")
+
+
+def test_invalid_obj_type_raises() -> None:
+    with pytest.raises(msgspec.ValidationError):
+        cuuid_decoder(CrockfordUUID, 123)
 
 
 def test_hooks_return_not_implemented() -> None:
