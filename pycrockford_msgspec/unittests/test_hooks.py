@@ -24,3 +24,8 @@ def test_invalid_decode_raises() -> None:
     bad_json = b'{"id":"not-a-cuuid","name":"x"}'
     with pytest.raises(msgspec.ValidationError):
         decoder.decode(bad_json)
+
+
+def test_hooks_return_not_implemented() -> None:
+    assert cuuid_decoder(str, "abc") is NotImplemented
+    assert cuuid_encoder("abc") is NotImplemented

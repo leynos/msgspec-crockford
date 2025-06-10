@@ -19,11 +19,11 @@ def cuuid_decoder(type_hint: Type[Any], obj: Any) -> CrockfordUUID:
         raise msgspec.ValidationError(
             f"Expected str for CrockfordUUID, got {type(obj).__name__}"
         )
-    raise NotImplementedError(f"No decoder for type {type_hint}")
+    return NotImplemented
 
 
 def cuuid_encoder(obj: Any) -> str:
     """Encode CrockfordUUID instances for msgspec."""
     if isinstance(obj, CrockfordUUID):
         return str(obj)
-    raise TypeError(f"Cannot encode type {type(obj).__name__} as CrockfordUUID string")
+    return NotImplemented
