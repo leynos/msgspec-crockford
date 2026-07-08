@@ -1,23 +1,23 @@
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false
+"""Integration tests exercising msgspec encode and decode round trips."""
+
 from __future__ import annotations
 
 import msgspec
 import pytest
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
 from msgspec_crockford import CrockfordUUID, cuuid_decoder
 
 
 class Record(msgspec.Struct):
+    """Sample struct with a Crockford UUID field."""
+
     id: CrockfordUUID
     name: str
 
 
 def test_msgspec_roundtrip() -> None:
+    """A struct with a Crockford UUID field survives a JSON round trip."""
     record = Record(CrockfordUUID.generate_v4(), "example")
     encoder = msgspec.json.Encoder()
     data = encoder.encode({"id": str(record.id), "name": record.name})
@@ -26,6 +26,7 @@ def test_msgspec_roundtrip() -> None:
 
 
 def test_msgspec_invalid() -> None:
+    """A malformed identifier fails msgspec validation."""
     dec = msgspec.json.Decoder(type=Record, dec_hook=cuuid_decoder)
     with pytest.raises(msgspec.ValidationError):
         dec.decode(b'{"id":"invalid","name":"x"}')
