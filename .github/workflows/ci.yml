@@ -51,7 +51,7 @@ jobs:
         run: |
           if ! command -v whitaker-installer >/dev/null 2>&1; then
             if cargo binstall --version >/dev/null 2>&1; then
-              cargo binstall --no-confirm \
+              cargo binstall --no-confirm --locked \
                 whitaker-installer@"${WHITAKER_INSTALLER_VERSION}"
             else
               echo "cargo-binstall unavailable; building whitaker-installer from crates.io"
@@ -97,10 +97,14 @@ jobs:
       - name: Install CodeScene Coverage CLI
         if: env.CS_ACCESS_TOKEN != ''
         run: |
-          curl -fsSL https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh | bash -s -- -y
+          curl -fsSL --output install-cs-coverage-tool.sh \
+            https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh
           if [ -n "${CODESCENE_CLI_SHA256:-}" ]; then
             echo "${CODESCENE_CLI_SHA256}  install-cs-coverage-tool.sh" | sha256sum -c -
+          else
+            echo "::notice::CODESCENE_CLI_SHA256 is not set; skipping installer checksum verification"
           fi
+          bash install-cs-coverage-tool.sh -y
 
       - name: Upload coverage to CodeScene
         if: env.CS_ACCESS_TOKEN != ''
