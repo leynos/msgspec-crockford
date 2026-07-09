@@ -1,21 +1,30 @@
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false
+"""msgspec encode and decode hooks for `CrockfordUUID` values."""
+
 from __future__ import annotations
 
-from typing import Any, get_args, get_origin, Union
+import typing as typ
 from types import NotImplementedType, UnionType
 
 import msgspec
 
-from .types import CrockfordUUID
 from .exceptions import CrockfordUUIDError
+from .types import CrockfordUUID
 
 
-def cuuid_decoder(type_hint: Any, obj: Any) -> CrockfordUUID | NotImplementedType:
+def _invalid_payload_error(obj: object) -> msgspec.ValidationError:
+    """Build a validation error for a non-string CrockfordUUID payload."""
+    return msgspec.ValidationError(
+        f"Expected str for CrockfordUUID, got {type(obj).__name__}"
+    )
+
+
+def cuuid_decoder(type_hint: object, obj: object) -> CrockfordUUID | NotImplementedType:
     """Decode CrockfordUUID strings for msgspec."""
-    origin = get_origin(type_hint)
-    args = get_args(type_hint)
+    origin = typ.get_origin(type_hint)
+    args = typ.get_args(type_hint)
     is_crockford_type = type_hint is CrockfordUUID or (
-        origin in (Union, UnionType) and CrockfordUUID in args
+        origin in {typ.Union, UnionType} and CrockfordUUID in args
     )
 
     if is_crockford_type:
@@ -26,12 +35,10 @@ def cuuid_decoder(type_hint: Any, obj: Any) -> CrockfordUUID | NotImplementedTyp
                 return CrockfordUUID(obj)
             except CrockfordUUIDError as exc:
                 raise msgspec.ValidationError(str(exc)) from exc
-        raise msgspec.ValidationError(
-            f"Expected str for CrockfordUUID, got {type(obj).__name__}"
-        )
+        raise _invalid_payload_error(obj)
     return NotImplemented
 
 
-def cuuid_encoder(obj: Any) -> str | NotImplementedType:
+def cuuid_encoder(obj: object) -> str | NotImplementedType:
     """Encode CrockfordUUID instances for msgspec."""
     return str(obj) if isinstance(obj, CrockfordUUID) else NotImplemented

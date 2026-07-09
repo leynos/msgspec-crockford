@@ -12,6 +12,17 @@ updates:
       default-days: 7
       semver-major-days: 14
 
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 7
+
   - package-ecosystem: "cargo"
     directory: "/pycrockford_rs"
     open-pull-requests-limit: 5

@@ -1,18 +1,16 @@
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false, reportGeneralTypeIssues=false, reportArgumentType=false
+"""Unit tests for the msgspec encode and decode hooks."""
+
 from __future__ import annotations
 
 import msgspec
 import pytest
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-
 from msgspec_crockford import CrockfordUUID, cuuid_decoder, cuuid_encoder
 
 
 def test_encode_decode_round_trip() -> None:
+    """Encoding then decoding returns an equal identifier."""
     original = CrockfordUUID.generate_v4()
     encoded = cuuid_encoder(original)
     decoded = cuuid_decoder(CrockfordUUID, encoded)
@@ -20,21 +18,25 @@ def test_encode_decode_round_trip() -> None:
 
 
 def test_invalid_decode_raises() -> None:
+    """A malformed Crockford string raises a validation error."""
     with pytest.raises(msgspec.ValidationError):
         cuuid_decoder(CrockfordUUID, "not-a-cuuid")
 
 
 def test_invalid_obj_type_raises() -> None:
+    """A non-string payload raises a validation error."""
     with pytest.raises(msgspec.ValidationError):
         cuuid_decoder(CrockfordUUID, 123)
 
 
 def test_hooks_return_not_implemented() -> None:
+    """The hooks defer to msgspec for unrelated types."""
     assert cuuid_decoder(str, "abc") is NotImplemented
     assert cuuid_encoder("abc") is NotImplemented
 
 
 def test_decoder_optional_handling() -> None:
+    """Optional hints defer `None` and decode string payloads."""
     hint = CrockfordUUID | None
     uuid_obj = CrockfordUUID.generate_v4()
     assert cuuid_decoder(hint, None) is NotImplemented
