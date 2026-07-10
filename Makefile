@@ -1,5 +1,7 @@
 MDLINT ?= markdownlint-cli2
 NIXIE ?= nixie
+TYPOS_VERSION ?= 1.48.0
+TYPOS = env $(UV_ENV) $(UV) tool run typos@$(TYPOS_VERSION)
 MDFORMAT_ALL ?= mdformat-all
 export PATH := $(HOME)/.local/bin:$(HOME)/.bun/bin:$(PATH)
 UV ?= $(shell command -v uv 2>/dev/null || printf '%s/.local/bin/uv' "$$HOME")
@@ -35,11 +37,12 @@ WHITAKER ?= $(or $(shell command -v whitaker 2>/dev/null),$(wildcard $(USER_WHIT
 
 
 .PHONY: help all audit clean build build-release lint lint-python fmt check-fmt \
-        markdownlint nixie test typecheck $(TOOLS) $(VENV_TOOLS) lint-rust rust-audit whitaker
+        markdownlint spelling nixie test typecheck $(TOOLS) $(VENV_TOOLS) lint-rust rust-audit whitaker
 
 .DEFAULT_GOAL := all
 
 all: build check-fmt lint typecheck test
+	+$(MAKE) spelling
 
 define ensure_uv
 	@command -v $(UV) >/dev/null 2>&1 || { \
@@ -63,6 +66,7 @@ clean: ## Remove build artifacts
 	rm -rf build dist *.egg-info \
 	  .mypy_cache .pytest_cache .coverage coverage.* \
 	  lcov.info htmlcov .venv .uv-cache .uv-tools $(RUST_CRATE_DIR)/target
+	rm -f .typos-oxendict-base.json .typos-oxendict-base.toml
 	find . -type d -name '__pycache__' -print0 | xargs -0 -r rm -rf
 
 define ensure_tool
@@ -159,6 +163,12 @@ rust-audit: ## Audit Rust extension dependencies for known vulnerabilities
 
 markdownlint: $(MDLINT) ## Lint Markdown files
 	env -u NO_COLOR $(MDLINT) '**/*.md'
+	+$(MAKE) spelling
+
+spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
+	$(UV_ENV) $(UV) run scripts/generate_typos_config.py
+	find . -type f -name '*.md' -not -path './target/*' -print0 | \
+		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
 
 nixie: ## Validate Mermaid diagrams
 	$(call ensure_tool,$(NIXIE))

@@ -204,3 +204,7 @@ target/
 # uv tooling caches used by the Makefile
 .uv-cache/
 .uv-tools/
+
+# Untracked cache of the estate-wide en-GB-oxendict dictionary.
+.typos-oxendict-base.json
+.typos-oxendict-base.toml

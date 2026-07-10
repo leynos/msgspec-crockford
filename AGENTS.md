@@ -35,30 +35,30 @@ When implementing changes, adhere to the following testing procedures:
 - **New Functionality:**
   - Implement unit tests covering all new code units (functions, components,
     classes). Implement tests **before** implementing the unit.
-  - Implement behavioral tests that verify the end-to-end behavior of the new
+  - Implement behavioural tests that verify the end-to-end behaviour of the new
     feature from a user interaction perspective.
-  - Ensure both unit and behavioral tests pass before considering the
+  - Ensure both unit and behavioural tests pass before considering the
     functionality complete.
 - **Bug Fixes:**
-  - Before fixing the bug, write a new test (unit or behavioral, whichever is
+  - Before fixing the bug, write a new test (unit or behavioural, whichever is
     most appropriate) that specifically targets and reproduces the bug. This
     test should initially fail.
   - Implement the bug fix.
   - Verify that the new test now passes, along with all existing tests.
 - **Modifying Existing Functionality:**
-  - Identify the existing behavioral and unit tests relevant to the
+  - Identify the existing behavioural and unit tests relevant to the
     functionality being changed.
-  - **First, modify the tests** to reflect the new requirements or behavior.
+  - **First, modify the tests** to reflect the new requirements or behaviour.
   - Run the tests; they should now fail.
   - Implement the code changes to the functionality.
   - Verify that the modified tests (and all other existing tests) now pass.
 - **Refactoring:**
-  - Identify or create a behavioral test that covers the functionality being
+  - Identify or create a behavioural test that covers the functionality being
     refactored. Ensure this test passes **before** starting the refactor.
   - Perform the refactoring (e.g., extracting logic into a new unit).
   - If new units are created (e.g., a new function or component), add unit
     tests for these extracted units.
-  - After the refactor, ensure the original behavioral test **still passes**
+  - After the refactor, ensure the original behavioural test **still passes**
     without modification. Also ensure any new unit tests pass.
 
 ## Change Quality & Committing
@@ -68,7 +68,7 @@ When implementing changes, adhere to the following testing procedures:
 - **Quality Gates:** Before considering a change complete or proposing a
   commit, ensure it meets the following criteria:
   - For Python files:
-    - **Testing:** Passes all relevant unit and behavioral tests according to
+    - **Testing:** Passes all relevant unit and behavioural tests according to
       the guidelines above.
     - **Linting:** Passes lint checks (`ruff check` or integrated editor
       linting).
@@ -77,7 +77,7 @@ When implementing changes, adhere to the following testing procedures:
     - **Typechecking:** Passes type checking (`pyright` or integrated editor
       type checking).
   - For TypeScript files:
-    - **Testing:** Passes all relevant unit and behavioral tests according to
+    - **Testing:** Passes all relevant unit and behavioural tests according to
       the guidelines above.
     - **Linting:** Passes lint checks (`biome check .` or integrated editor
       linting).
@@ -86,7 +86,7 @@ When implementing changes, adhere to the following testing procedures:
     - **TypeScript Compilation:** Compiles successfully without TypeScript
       errors (`tsc --noEmit`).
   - For Rust files:
-    - **Testing:** Passes all relevant unit and behavioral tests according to
+    - **Testing:** Passes all relevant unit and behavioural tests according to
       the guidelines above.
     - **Linting:** Passes lint checks (`cargo clippy` or integrated editor
       linting).
@@ -95,6 +95,8 @@ When implementing changes, adhere to the following testing procedures:
   - For Markdown files (`.md` only):
     - **Linting:** Passes lint checks (`markdownlint filename.md` or integrated
       editor linting).
+    - **Spelling:** Passes `make spelling`, which generates `typos.toml` from
+      the shared en-GB-oxendict base plus `typos.local.toml`.
     - **Mermaid diagrams:** Passes validation using nixie (`nixie filename.md`)
 - **Committing:**
   - Only changes that meet all the quality gates above should be committed.
@@ -138,7 +140,7 @@ When implementing changes, adhere to the following testing procedures:
 - **Separate Atomic Refactors:** If refactoring is deemed necessary:
   - Perform the refactoring as a **separate, atomic commit** *after* the
     functional change commit.
-  - Ensure the refactoring adheres to the testing guidelines (behavioral tests
+  - Ensure the refactoring adheres to the testing guidelines (behavioural tests
     pass before and after, unit tests added for new units).
   - Ensure the refactoring commit itself passes all quality gates.
 
