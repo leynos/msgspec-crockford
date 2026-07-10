@@ -34,7 +34,7 @@ jobs:
         run: make spelling
 
       - name: Set up Rust
-        uses: leynos/shared-actions/.github/actions/setup-rust@455d9ed03477c0026da96c2541ca26569a74acac
+        uses: leynos/shared-actions/.github/actions/setup-rust@3c1fa01bcf4c26dac79975c18b74c01d577dcf95
         with:
           toolchain: stable
 
