@@ -27,7 +27,7 @@ This approach is anticipated to yield several key benefits:
    is known for its speed and efficiency 6, the solution can significantly
    outperform pure Python implementations, especially critical in
    high-throughput applications where `msgspec` is often chosen for its speed.1
-2. **Ergonomics:** A carefully designed Python API, centered around a custom
+2. **Ergonomics:** A carefully designed Python API, centred around a custom
    `CrockfordUUID` type, will provide a seamless and intuitive experience for
    developers, integrating naturally with Python's type system and `msgspec`'s
    schema definitions.1
@@ -264,7 +264,7 @@ module will house the Python-callable functions and classes.
    will be implemented in Rust using PyO3's #\[pyclass\] macro.2 This approach
    is superior to merely exposing raw decoding and encoding functions because
    it allows users to work with CrockfordUUID objects directly, which can
-   encapsulate behavior and state, and integrate more naturally into Python
+   encapsulate behaviour and state, and integrate more naturally into Python
    codebases.
 
    A `CrockfordUUID` object can be instantiated from a Crockford string, raw
@@ -646,7 +646,7 @@ This comprehensive API ensures that the `CrockfordUUID` type is not just a thin
 wrapper but a genuinely useful abstraction. The Rust core handles the
 performance-critical encoding/decoding, while the Python layer (defined via
 `#[pyclass]` and potentially augmented in `types.py` if needed) provides the
-rich, developer-friendly interface. This division of labor plays to the
+rich, developer-friendly interface. This division of labour plays to the
 respective strengths of Rust (performance, safety 6) and Python
 (expressiveness, ease of use 6).
 

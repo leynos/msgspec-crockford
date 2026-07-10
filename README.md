@@ -63,3 +63,11 @@ sphinx-build -M html docs/source docs/_build
 
 Generated HTML will appear in `docs/_build/html`. This directory is ignored by
 Git and should not be committed.
+
+### Spelling policy
+
+Run `make spelling` after changing Markdown. The target refreshes the shared
+`leynos` en-GB-oxendict dictionary only when its published source is newer than
+the ignored local cache, regenerates the tracked `typos.toml`, and runs the
+pinned `typos` 1.48.0 release. Add narrow repository-only exceptions to
+`typos.local.toml`; never edit the generated configuration by hand.
