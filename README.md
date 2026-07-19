@@ -1,5 +1,8 @@
 # pycrockford_msgspec
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](
+https://deepwiki.com/leynos/msgspec-crockford)
+
 A Python extension providing Crockford Base32 UUID support for the
 [msgspec](https://jcristharif.com/msgspec/) serialization library. The core
 encoding and decoding logic is written in Rust and exposed through PyO3.
