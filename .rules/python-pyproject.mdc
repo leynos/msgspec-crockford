@@ -98,8 +98,9 @@ docs = [
 ```
 
 * **`[project.optional-dependencies]`:** Each table key (e.g. `dev`, `docs`)
-  defines a “dependency group.” You can install a group via
-  `uv add --group dev` or `uv sync --include dev`. ([Python Packaging][4],
+  defines a published extra. Install one via `uv add --optional dev ...` and
+  `uv sync --extra dev`; `uv add --group` and `uv sync --include` instead
+  target the separate `[dependency-groups]` table. ([Python Packaging][4],
   [DevsJC][6])
 * **Why use groups?** You keep the lockfile deterministic (via `uv.lock`) while
   still separating concerns (test‐only vs. production). ([Medium][7],
@@ -243,8 +244,8 @@ package = true
 2. **Optional Dependencies (`[project.optional-dependencies]`):**
 
    * Grouped as `dev` (for testing + linting) and `docs` (for documentation).
-     Installing them is as simple as `uv add --group dev` or
-     `uv sync --include dev`. ([Python Packaging][4], [DevsJC][6])
+     Installing them is as simple as `uv add --optional dev ...` and
+     `uv sync --extra dev`. ([Python Packaging][4], [DevsJC][6])
 
 3. **Entry Points (`[project.scripts]`):**
 
