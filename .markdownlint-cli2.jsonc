@@ -17,6 +17,14 @@
     "**/target/**",
     ".terraform/**",
     ".uv-cache/**",
-    "CRUSH.md"
+    "CRUSH.md",
+    ".vtcode/**",
+    "memories/**",
+    // Git-ignored output directories that `make fmt` must never rewrite.
+    ".uv-tools/**",
+    "build/**",
+    "dist/**",
+    "htmlcov/**",
+    "docs/_build/**"
   ]
 }

@@ -55,6 +55,16 @@ cargo test
 pytest -q
 ```
 
+### Markdown formatting
+
+`make fmt` and `make check-fmt` run `mdtablefix` (version 0.6.0, the same
+release CI installs); install it once with
+`cargo install --locked mdtablefix --version 0.6.0`. `make fmt` also runs
+`markdownlint-cli2`, which CI provides through its GitHub action; locally
+install it with `bun install -g markdownlint-cli2` (or
+`npm install -g markdownlint-cli2`). This replaces the previous `mdformat-all`
+wrapper.
+
 ### Building the documentation
 
 The documentation lives in `docs/` and uses Sphinx. Install Sphinx and run:

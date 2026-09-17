@@ -112,6 +112,12 @@ When implementing changes, adhere to the following testing procedures:
     - **Formatting:** Adheres to formatting standards (`cargo fmt` or integrated
       editor formatting).
   - For Markdown files (`.md` only):
+    - **Formatting:** Adheres to formatting standards (`make fmt`, which runs
+      `mdtablefix` and `markdownlint-cli2 --fix`). Install `mdtablefix` 0.6.0
+      with `cargo install --locked mdtablefix --version 0.6.0` and
+      `markdownlint-cli2` with `bun install -g markdownlint-cli2` (or `npm
+      install -g markdownlint-cli2`); this replaces the previous
+      `mdformat-all` wrapper.
     - **Linting:** Passes lint checks (`markdownlint filename.md` or integrated
       editor linting).
     - **Spelling:** Passes `make spelling`, which generates `typos.toml` from
