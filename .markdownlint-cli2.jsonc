@@ -19,6 +19,12 @@
     ".uv-cache/**",
     "CRUSH.md",
     ".vtcode/**",
-    "memories/**"
+    "memories/**",
+    // Git-ignored output directories that `make fmt` must never rewrite.
+    ".uv-tools/**",
+    "build/**",
+    "dist/**",
+    "htmlcov/**",
+    "docs/_build/**"
   ]
 }
