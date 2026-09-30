@@ -34,8 +34,9 @@ jobs:
         run: make spelling
 
       - name: Set up Rust
-        uses: leynos/shared-actions/.github/actions/setup-rust@3c1fa01bcf4c26dac79975c18b74c01d577dcf95
+        uses: leynos/shared-actions/.github/actions/setup-rust@6cec89bac47a21cf756d68d638a9a510998e57f8
         with:
+          expect-cache: any
           toolchain: stable
 
       - name: Cache Rust lint and test tools
