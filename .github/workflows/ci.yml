@@ -12,7 +12,6 @@ jobs:
       CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
       CODESCENE_CLI_SHA256: ${{ vars.CODESCENE_CLI_SHA256 }}
 
-      WHITAKER_INSTALLER_VERSION: '0.2.6'
       CARGO_TERM_COLOR: always
       BUILD_PROFILE: debug
 
@@ -54,21 +53,14 @@ jobs:
             ~/.local/share/whitaker
 
       - name: Install Rust lint and test tools
+        uses: leynos/shared-actions/.github/actions/install-whitaker@6dea5677a84fec60ca51b07202570e3af12ffdb4
+        with:
+          cranelift: true
+
+      - name: Install cargo-audit
         env:
           RUSTFLAGS: ""
-        run: |
-          if ! command -v whitaker-installer >/dev/null 2>&1; then
-            if cargo binstall --version >/dev/null 2>&1; then
-              cargo binstall --no-confirm --locked \
-                whitaker-installer@"${WHITAKER_INSTALLER_VERSION}"
-            else
-              echo "cargo-binstall unavailable; building whitaker-installer from crates.io"
-              cargo install --locked \
-                whitaker-installer --version "${WHITAKER_INSTALLER_VERSION}"
-            fi
-          fi
-          whitaker-installer --cranelift
-          cargo install --locked cargo-audit
+        run: cargo install --locked cargo-audit
 
       - name: Install CLI tools
         run: |
