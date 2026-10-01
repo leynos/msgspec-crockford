@@ -57,6 +57,11 @@ jobs:
         with:
           cranelift: true
 
+      - name: Install cargo-audit
+        env:
+          RUSTFLAGS: ""
+        run: cargo install --locked cargo-audit
+
       - name: Install CLI tools
         run: |
           for tool in mbake; do uv tool install ${tool}; done
