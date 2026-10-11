@@ -15,9 +15,11 @@ use uuid::Uuid;
 /// Errors raised when decoding a Crockford Base32 string into a UUID's bytes.
 #[derive(Debug)]
 pub enum CrockfordError {
-    /// The input decoded to a number of bytes other than 16.
+    /// The input decoded successfully, but to a number of bytes other than 16.
     InvalidLength(usize),
-    /// The input contained a character outside the Crockford alphabet.
+    /// The input could not be decoded: it has a character outside the Crockford
+    /// alphabet, an encoded length no byte string can have, or non-zero trailing
+    /// bits.
     DecodeError(data_encoding::DecodeError),
 }
 
@@ -64,8 +66,10 @@ pub fn encode_bytes_to_crockford(bytes: &[u8; 16]) -> String {
 /// hyphens are ignored, per the Crockford specification.
 ///
 /// # Errors
-/// Returns [`CrockfordError::DecodeError`] for an invalid character and
-/// [`CrockfordError::InvalidLength`] when the input does not decode to 16 bytes.
+/// Returns [`CrockfordError::DecodeError`] when the input cannot be decoded at
+/// all (an invalid character, an impossible encoded length, or non-zero trailing
+/// bits), and [`CrockfordError::InvalidLength`] when it decodes cleanly to a
+/// number of bytes other than 16.
 pub fn decode_crockford_to_bytes(s: &str) -> Result<[u8; 16], CrockfordError> {
     let decoded = CROCKFORD
         .decode(s.as_bytes())
