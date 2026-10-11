@@ -17,6 +17,7 @@ import pytest
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 CI_WORKFLOW = _REPO_ROOT / ".github" / "workflows" / "ci.yml"
 CACHE_STEP = "Cache Rust lint and test tools"
+CACHE_KEY = "without-whitaker"
 CARGO_TOOLS = {"~/.cargo/bin/cargo-nextest", "~/.cargo/bin/cargo-audit"}
 WHITAKER_PATH_RE = re.compile(r"whitaker", re.IGNORECASE)
 _STEP_RE = re.compile(r"^( *)- name: (.+)$", re.MULTILINE)
@@ -52,6 +53,17 @@ def test_the_cache_step_caches_exactly_the_cargo_tools() -> None:
     paths = cache_directories(CI_WORKFLOW.read_text("utf-8"))
 
     assert set(paths) == CARGO_TOOLS, paths
+
+
+def test_the_cache_key_separates_it_from_archives_that_hold_whitaker() -> None:
+    """The cache step carries its own key, so older archives are not restored.
+
+    Those archives were saved with the Whitaker paths and still hold the stale
+    checkout, which dropping the paths alone does not stop from being restored.
+    """
+    step = _step_text(CI_WORKFLOW.read_text("utf-8"), CACHE_STEP)
+
+    assert re.search(rf"^\s+key: {CACHE_KEY}$", step, re.MULTILINE), step
 
 
 def test_no_cached_path_is_a_whitaker_path() -> None:

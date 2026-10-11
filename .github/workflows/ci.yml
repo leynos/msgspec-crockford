@@ -47,7 +47,10 @@ jobs:
           workspaces: pycrockford_rs
           # Whitaker is not cached here: install-whitaker owns its installer
           # and suite, and a restored `~/.local/share/whitaker` from an older
-          # run made the installer's `git pull` abort on untracked files.
+          # run made the installer's `git pull` abort on untracked files. The
+          # key names this cache apart from the older archives, which still
+          # hold that checkout and would otherwise stay eligible to restore.
+          key: without-whitaker
           cache-directories: |
             ~/.cargo/bin/cargo-nextest
             ~/.cargo/bin/cargo-audit
