@@ -45,12 +45,15 @@ jobs:
           # `cargo metadata` probe runs at the repository root, finds no
           # Cargo.toml, and skips restoring the tool cache entirely.
           workspaces: pycrockford_rs
+          # Whitaker is not cached here: install-whitaker owns its installer
+          # and suite, and a restored `~/.local/share/whitaker` from an older
+          # run made the installer's `git pull` abort on untracked files. The
+          # key names this cache apart from the older archives, which still
+          # hold that checkout and would otherwise stay eligible to restore.
+          key: without-whitaker
           cache-directories: |
             ~/.cargo/bin/cargo-nextest
             ~/.cargo/bin/cargo-audit
-            ~/.cargo/bin/whitaker-installer
-            ~/.local/bin/whitaker
-            ~/.local/share/whitaker
 
       - name: Install Rust lint and test tools
         uses: leynos/shared-actions/.github/actions/install-whitaker@6dea5677a84fec60ca51b07202570e3af12ffdb4
