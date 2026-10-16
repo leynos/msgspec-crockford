@@ -12,9 +12,14 @@ use std::hash::{Hash, Hasher};
 use std::sync::LazyLock;
 use uuid::Uuid;
 
+/// Errors raised when decoding a Crockford Base32 string into a UUID's bytes.
 #[derive(Debug)]
 pub enum CrockfordError {
+    /// The input decoded successfully, but to a number of bytes other than 16.
     InvalidLength(usize),
+    /// The input could not be decoded: it has a character outside the Crockford
+    /// alphabet, an encoded length no byte string can have, or non-zero trailing
+    /// bits.
     DecodeError(data_encoding::DecodeError),
 }
 
@@ -50,10 +55,21 @@ fn uuid_module(py: Python<'_>) -> PyResult<Bound<'_, PyModule>> {
     Ok(module.bind(py).clone())
 }
 
+/// Encode 16 UUID bytes as an uppercase Crockford Base32 string.
 pub fn encode_bytes_to_crockford(bytes: &[u8; 16]) -> String {
     CROCKFORD.encode(bytes)
 }
 
+/// Decode a Crockford Base32 string into 16 UUID bytes.
+///
+/// Lowercase input and the look-alike characters `i`, `l`, `o` are accepted, and
+/// hyphens are ignored, per the Crockford specification.
+///
+/// # Errors
+/// Returns [`CrockfordError::DecodeError`] when the input cannot be decoded at
+/// all (an invalid character, an impossible encoded length, or non-zero trailing
+/// bits), and [`CrockfordError::InvalidLength`] when it decodes cleanly to a
+/// number of bytes other than 16.
 pub fn decode_crockford_to_bytes(s: &str) -> Result<[u8; 16], CrockfordError> {
     let decoded = CROCKFORD
         .decode(s.as_bytes())
