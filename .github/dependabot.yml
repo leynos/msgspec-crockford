@@ -13,6 +13,7 @@ updates:
     labels:
       - "dependencies"
       - "python"
+      - "pip"
     schedule:
       interval: "daily"
     cooldown:
@@ -40,6 +41,10 @@ updates:
     cooldown:
       default-days: 7
 
+    groups:
+      github-actions:
+        patterns:
+          - '*'
   - package-ecosystem: "cargo"
     directory: "/pycrockford_rs"
     groups:
@@ -55,6 +60,17 @@ updates:
       - "cargo"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 7
+      semver-major-days: 14
+  - package-ecosystem: uv
+    directory: /
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+      - uv
+    schedule:
+      interval: daily
     cooldown:
       default-days: 7
       semver-major-days: 14
