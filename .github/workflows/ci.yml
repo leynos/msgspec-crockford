@@ -5,13 +5,13 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   lint-test:
     runs-on: ubuntu-latest
     env:
-      CS_ACCESS_TOKEN: ${{ secrets.CS_ACCESS_TOKEN }}
-      CODESCENE_CLI_SHA256: ${{ vars.CODESCENE_CLI_SHA256 }}
-
       CARGO_TERM_COLOR: always
       BUILD_PROFILE: debug
 
@@ -104,35 +104,25 @@ jobs:
       - name: Audit dependencies
         run: make audit
 
+      # Pull requests run the suite once, under coverage, and ratchet it
+      # without talking to CodeScene. Pushes to main run it once, under
+      # coverage, in coverage-main.yml, which alone publishes to CodeScene.
+      # `make test-workflow-contracts` holds that shape, and this selection
+      # must match the publisher's.
       - name: Test and Measure Coverage
-        uses: leynos/shared-actions/.github/actions/generate-coverage@2a910bfcfd1ea4216419f9290331785f05b33320
+        if: github.event_name == 'pull_request'
+        # Pin one interpreter in both lanes: generate-coverage builds its own
+        # venv with a bare `uv venv`, which takes whatever uv finds first.
+        env:
+          UV_PYTHON: '3.13'
+        uses: leynos/shared-actions/.github/actions/generate-coverage@5a99aed78ce68dcebd3052b75c31e6f173162b1e
         with:
           output-path: coverage.xml
           format: cobertura
           artefact-name-suffix: msgspec-crockford
-
           cargo-manifest: pycrockford_rs/Cargo.toml
+          with-ratchet: 'true'
+          publish-artefact: 'false'
 
-      - name: Install CodeScene Coverage CLI
-        if: env.CS_ACCESS_TOKEN != ''
-        run: |
-          curl -fsSL --output install-cs-coverage-tool.sh \
-            https://downloads.codescene.io/enterprise/cli/install-cs-coverage-tool.sh
-          if [ -n "${CODESCENE_CLI_SHA256:-}" ]; then
-            echo "${CODESCENE_CLI_SHA256}  install-cs-coverage-tool.sh" | sha256sum -c -
-          else
-            echo "::notice::CODESCENE_CLI_SHA256 is not set; skipping installer checksum verification"
-          fi
-          bash install-cs-coverage-tool.sh -y
-
-      - name: Upload coverage to CodeScene
-        if: env.CS_ACCESS_TOKEN != ''
-        run: |
-          if [ ! -f coverage.xml ]; then
-            echo "coverage.xml not found!"
-            exit 1
-          fi
-          cs-coverage upload \
-            --format "cobertura" \
-            --metric "line-coverage" \
-            coverage.xml
+      - name: Check the CV-005 contracts
+        run: make test-workflow-contracts
