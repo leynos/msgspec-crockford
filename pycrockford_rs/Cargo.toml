@@ -11,3 +11,6 @@ crate-type = ["cdylib", "rlib"]
 data-encoding = "2"
 pyo3 = { version = "0.29", features = ["extension-module", "abi3-py310"] }
 uuid = { version = "1", features = ["v4", "v7"] }
+
+[lints.rust]
+missing_docs = "deny"
