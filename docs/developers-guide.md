@@ -9,11 +9,11 @@ any Python definition it scans under `$(INTERROGATE_TARGETS)` (the package, the
 Sphinx configuration, the extension's tests and the scripts) without a
 docstring. It also fails on any `MISSED` row, because interrogate rounds its
 percentage to one decimal and so can pass a lone gap in a sufficiently large
-codebase. Interrogate 1.7.0 skips any path under a target whose name begins with
-`.tox`, `.venv`, `venv`, `.git` or `.hg`;
+codebase. Interrogate 1.7.0 skips a path whose first component below a target
+begins with `.tox`, `.venv`, `venv`, `.git` or `.hg`;
 `msgspec_crockford/unittests/test_interrogate_gate.py` fails if a tracked
-Python file sits under such a name inside a target, and asserts the rest of the
-wiring. Add a new Python directory to `INTERROGATE_TARGETS`.
+Python file sits at such a name directly under a target, and asserts the rest
+of the wiring. Add a new Python directory to `INTERROGATE_TARGETS`.
 
 ## CodeScene coverage publication
 
