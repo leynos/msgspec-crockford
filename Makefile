@@ -1,3 +1,8 @@
+# The CV-005 CodeScene contracts live in shared-actions and run from a full
+# commit, so a fix is a pin bump. `.github/cv005.toml` holds this repository's
+# only parameters.
+CV005_CONTRACTS_REF ?= 5a99aed78ce68dcebd3052b75c31e6f173162b1e
+CV005_CONTRACTS = $(UV_ENV) $(UV) tool run --python 3.13 --from 'git+https://github.com/leynos/shared-actions@$(CV005_CONTRACTS_REF)\#subdirectory=packages/cv005-contracts' cv005-contracts
 MDLINT ?= markdownlint-cli2
 # `make fmt` and `make check-fmt` call mdtablefix directly. `--git` selects the
 # Markdown files Git tracks and `--include-untracked` adds the untracked files
@@ -20,6 +25,14 @@ VENV_TOOLS = pytest
 UV_ENV = PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
 PYTEST_XDIST_WORKERS ?= auto
 PYTHON_TARGETS ?= msgspec_crockford
+# Docstring presence over every Python directory the repository owns. Add a new
+# Python directory here; interrogate skips some path prefixes by default, so check
+# a new file against the verbose report.
+INTERROGATE_TARGETS ?= $(PYTHON_TARGETS) docs/source pycrockford_rs scripts
+# Level 2 prints a MISSED row per undocumented definition, which the
+# `interrogate` target fails on: the rounded percentage alone can pass a lone gap.
+INTERROGATE_FLAGS ?= -vv --fail-under 100
+INTERROGATE ?= uv run interrogate
 PYLINT_PYTHON ?= pypy@3.12
 PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= $(PYTHON_TARGETS)
@@ -41,12 +54,12 @@ WHITAKER_CARGO_FLAGS ?= --all-targets --all-features
 WHITAKER ?= $(or $(shell command -v whitaker 2>/dev/null),$(wildcard $(USER_WHITAKER)),whitaker)
 
 
-.PHONY: help all audit clean build build-release lint lint-python fmt check-fmt \
+.PHONY: help all audit clean build build-release lint lint-python interrogate fmt check-fmt \
         markdownlint spelling nixie test typecheck $(TOOLS) $(VENV_TOOLS) lint-rust rust-audit whitaker
 
 .DEFAULT_GOAL := all
 
-all: build check-fmt lint typecheck test
+all: build check-fmt lint typecheck test test-workflow-contracts
 	+$(MAKE) spelling
 
 define ensure_uv
@@ -135,9 +148,20 @@ check-fmt: build ## Verify formatting
 
 lint: lint-python lint-rust ## Run linters
 
-lint-python: build ## Run Python linters
+# Interrogate rounds its percentage to one decimal, so `--fail-under 100` alone
+# can pass a lone gap in a large repository; fail on any MISSED row as well.
+interrogate: build ## Enforce complete Python docstring coverage
+	@report="$$($(INTERROGATE) $(INTERROGATE_FLAGS) $(INTERROGATE_TARGETS))"; \
+	  status=$$?; \
+	  printf '%s\n' "$$report"; \
+	  test "$$status" -eq 0 || exit "$$status"; \
+	  if printf '%s\n' "$$report" | grep -q '| *MISSED *|'; then \
+	    printf '%s\n' 'interrogate: undocumented definitions remain; see the MISSED rows above' >&2; \
+	    exit 1; \
+	  fi
+
+lint-python: build interrogate ## Run Python linters
 	$(UV_ENV) $(UV) run ruff check $(PYTHON_TARGETS)
-	$(UV_ENV) $(UV) run interrogate --fail-under 100 $(PYTHON_TARGETS)
 	$(PYLINT) $(PYLINT_TARGETS)
 
 
@@ -185,6 +209,10 @@ test: build $(VENV_TOOLS) ## Run tests
 	RUSTFLAGS="$(RUST_FLAGS)" $(CARGO) $(TEST_CMD) $(TEST_FLAGS) $(BUILD_JOBS)
 	RUSTFLAGS="$(RUST_FLAGS)" $(CARGO) test --doc --manifest-path $(RUST_CRATE_DIR)/Cargo.toml --all-features
 
+
+.PHONY: test-workflow-contracts
+test-workflow-contracts: ## Check the CV-005 CodeScene workflow contracts
+	$(CV005_CONTRACTS) check --repository .
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?##' $(MAKEFILE_LIST) | \

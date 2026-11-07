@@ -1,3 +1,5 @@
+//! Round-trip and error-path tests for the Crockford Base32 helpers.
+
 use _pycrockford_rs_bindings::{
     decode_crockford_to_bytes, encode_bytes_to_crockford, CrockfordError,
 };
