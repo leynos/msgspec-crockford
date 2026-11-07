@@ -1,3 +1,5 @@
+"""Sphinx configuration for the pycrockford_msgspec documentation."""
+
 import os
 import sys
 

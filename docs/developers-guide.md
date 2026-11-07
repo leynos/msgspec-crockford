@@ -2,6 +2,20 @@
 
 This guide records the repository's build and CI arrangements for contributors.
 
+## Docstring coverage
+
+`make lint-python` first runs `make interrogate`, which needs `uv` and fails on
+any Python definition it scans under `$(INTERROGATE_TARGETS)` (the package, the
+Sphinx configuration, the extension's tests and the scripts) without a
+docstring. It also fails on any `MISSED` row, because interrogate rounds its
+percentage to one decimal and so can pass a lone gap in a sufficiently large
+codebase. Interrogate 1.7.0 skips a path whose first component below a target
+begins with `.tox`, `.venv`, `venv`, `.git` or `.hg`;
+`msgspec_crockford/unittests/test_interrogate_gate.py` fails if a tracked
+Python file sits at such a name, or in a directory of that name, directly under
+a target, and asserts the rest of the wiring. Add a new Python directory to
+`INTERROGATE_TARGETS`.
+
 ## CodeScene coverage publication
 
 Main owns CodeScene (CV-005). Nothing a pull request can start talks to

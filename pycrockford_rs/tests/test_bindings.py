@@ -1,4 +1,6 @@
 # pyright: reportMissingImports=false, reportAttributeAccessIssue=false
+"""Tests for the compiled Crockford encoding bindings and the CrockfordUUID type."""
+
 import uuid
 
 from _pycrockford_rs_bindings import (
@@ -9,6 +11,7 @@ from _pycrockford_rs_bindings import (
 
 
 def test_round_trip() -> None:
+    """Encoding sixteen bytes and decoding the result returns the same bytes."""
     raw = bytes(range(16))
     encoded = encode_crockford(raw)
     decoded = decode_crockford(encoded)
@@ -16,6 +19,7 @@ def test_round_trip() -> None:
 
 
 def test_crockforduuid_construction_and_equality() -> None:
+    """A CrockfordUUID built from text, bytes or a UUID holds equal values."""
     raw = bytes(range(16))
     uuid_obj = uuid.UUID(bytes=raw)
 
@@ -31,12 +35,14 @@ def test_crockforduuid_construction_and_equality() -> None:
 
 
 def test_case_insensitive_decoding() -> None:
+    """Decoding accepts the lower-case form of an encoded value."""
     raw = bytes(range(16))
     encoded = encode_crockford(raw).lower()
     assert decode_crockford(encoded) == raw
 
 
 def test_dunder_bytes() -> None:
+    """Calling bytes() on a CrockfordUUID returns its raw bytes."""
     raw = bytes(range(16))
     cuuid = CrockfordUUID(raw)
     assert bytes(cuuid) == raw
