@@ -25,6 +25,14 @@ VENV_TOOLS = pytest
 UV_ENV = PYO3_USE_ABI3_FORWARD_COMPATIBILITY=1 UV_CACHE_DIR=.uv-cache UV_TOOL_DIR=.uv-tools
 PYTEST_XDIST_WORKERS ?= auto
 PYTHON_TARGETS ?= msgspec_crockford
+# Docstring presence over every Python directory the repository owns. Add a new
+# Python directory here; interrogate skips some path prefixes by default, so check
+# a new file against the verbose report.
+INTERROGATE_TARGETS ?= $(PYTHON_TARGETS) docs/source pycrockford_rs scripts
+# Level 2 prints a MISSED row per undocumented definition, which the
+# `interrogate` target fails on: the rounded percentage alone passes a lone gap.
+INTERROGATE_FLAGS ?= -vv --fail-under 100
+INTERROGATE ?= uv run interrogate
 PYLINT_PYTHON ?= pypy@3.12
 PYLINT_VERSION ?= 4.0.9
 PYLINT_TARGETS ?= $(PYTHON_TARGETS)
@@ -46,7 +54,7 @@ WHITAKER_CARGO_FLAGS ?= --all-targets --all-features
 WHITAKER ?= $(or $(shell command -v whitaker 2>/dev/null),$(wildcard $(USER_WHITAKER)),whitaker)
 
 
-.PHONY: help all audit clean build build-release lint lint-python fmt check-fmt \
+.PHONY: help all audit clean build build-release lint lint-python interrogate fmt check-fmt \
         markdownlint spelling nixie test typecheck $(TOOLS) $(VENV_TOOLS) lint-rust rust-audit whitaker
 
 .DEFAULT_GOAL := all
@@ -140,9 +148,20 @@ check-fmt: build ## Verify formatting
 
 lint: lint-python lint-rust ## Run linters
 
-lint-python: build ## Run Python linters
+# Interrogate rounds its percentage to one decimal, so `--fail-under 100` alone
+# passes a lone gap in a large repository; fail on any MISSED row as well.
+interrogate: build ## Enforce complete Python docstring coverage
+	@report="$$($(INTERROGATE) $(INTERROGATE_FLAGS) $(INTERROGATE_TARGETS))"; \
+	  status=$$?; \
+	  printf '%s\n' "$$report"; \
+	  test "$$status" -eq 0 || exit "$$status"; \
+	  if printf '%s\n' "$$report" | grep -q '| *MISSED *|'; then \
+	    printf '%s\n' 'interrogate: undocumented definitions remain; see the MISSED rows above' >&2; \
+	    exit 1; \
+	  fi
+
+lint-python: build interrogate ## Run Python linters
 	$(UV_ENV) $(UV) run ruff check $(PYTHON_TARGETS)
-	$(UV_ENV) $(UV) run interrogate --fail-under 100 $(PYTHON_TARGETS)
 	$(PYLINT) $(PYLINT_TARGETS)
 
 

@@ -2,6 +2,16 @@
 
 This guide records the repository's build and CI arrangements for contributors.
 
+## Docstring coverage
+
+`make lint-python` first runs `make interrogate`, which needs `uv` and fails on
+any Python definition under `$(INTERROGATE_TARGETS)` (the package, the Sphinx
+configuration, the extension's tests and the scripts) without a docstring. It
+also fails on any `MISSED` row, because interrogate rounds its percentage to
+one decimal and so passes a lone gap. Add a new Python directory to
+`INTERROGATE_TARGETS`; `msgspec_crockford/unittests/test_interrogate_gate.py`
+asserts the wiring.
+
 ## CodeScene coverage publication
 
 Main owns CodeScene (CV-005). Nothing a pull request can start talks to
