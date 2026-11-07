@@ -5,12 +5,15 @@ This guide records the repository's build and CI arrangements for contributors.
 ## Docstring coverage
 
 `make lint-python` first runs `make interrogate`, which needs `uv` and fails on
-any Python definition under `$(INTERROGATE_TARGETS)` (the package, the Sphinx
-configuration, the extension's tests and the scripts) without a docstring. It
-also fails on any `MISSED` row, because interrogate rounds its percentage to
-one decimal and so passes a lone gap. Add a new Python directory to
-`INTERROGATE_TARGETS`; `msgspec_crockford/unittests/test_interrogate_gate.py`
-asserts the wiring.
+any Python definition it scans under `$(INTERROGATE_TARGETS)` (the package, the
+Sphinx configuration, the extension's tests and the scripts) without a
+docstring. It also fails on any `MISSED` row, because interrogate rounds its
+percentage to one decimal and so can pass a lone gap in a sufficiently large
+codebase. Interrogate 1.7.0 skips any path under a target whose name begins with
+`.tox`, `.venv`, `venv`, `.git` or `.hg`;
+`msgspec_crockford/unittests/test_interrogate_gate.py` fails if a tracked
+Python file sits under such a name inside a target, and asserts the rest of the
+wiring. Add a new Python directory to `INTERROGATE_TARGETS`.
 
 ## CodeScene coverage publication
 
