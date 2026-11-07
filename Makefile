@@ -30,7 +30,7 @@ PYTHON_TARGETS ?= msgspec_crockford
 # a new file against the verbose report.
 INTERROGATE_TARGETS ?= $(PYTHON_TARGETS) docs/source pycrockford_rs scripts
 # Level 2 prints a MISSED row per undocumented definition, which the
-# `interrogate` target fails on: the rounded percentage alone passes a lone gap.
+# `interrogate` target fails on: the rounded percentage alone can pass a lone gap.
 INTERROGATE_FLAGS ?= -vv --fail-under 100
 INTERROGATE ?= uv run interrogate
 PYLINT_PYTHON ?= pypy@3.12
@@ -149,7 +149,7 @@ check-fmt: build ## Verify formatting
 lint: lint-python lint-rust ## Run linters
 
 # Interrogate rounds its percentage to one decimal, so `--fail-under 100` alone
-# passes a lone gap in a large repository; fail on any MISSED row as well.
+# can pass a lone gap in a large repository; fail on any MISSED row as well.
 interrogate: build ## Enforce complete Python docstring coverage
 	@report="$$($(INTERROGATE) $(INTERROGATE_FLAGS) $(INTERROGATE_TARGETS))"; \
 	  status=$$?; \
