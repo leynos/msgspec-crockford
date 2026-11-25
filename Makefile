@@ -192,6 +192,8 @@ markdownlint: $(MDLINT) ## Lint Markdown files
 	env -u NO_COLOR $(MDLINT) '**/*.md'
 	+$(MAKE) spelling
 
+# The gate reads tracked files only, so stage new Markdown files before running
+# this target; untracked files are not checked.
 spelling: ## Enforce en-GB-oxendict spelling in prose
 	$(TYPOS_CONFIG_BUILDER) gate --repository .
 
