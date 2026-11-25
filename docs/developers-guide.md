@@ -9,13 +9,13 @@ Cognitive complexity is gated by Whitaker, not by Clippy. Clippy's
 branching a macro generated, and nothing in this repository enables it.
 Whitaker's experimental `macro_aware_cognitive_complexity` gates it at
 `max_complexity = 9`, CodeScene's ceiling. `pycrockford_rs/dylint.toml` opts in
-with `[whitaker] experimental = ["macro_aware_cognitive_complexity"]`, and
-`make lint-rust` runs Whitaker from that directory with `-D warnings`, so a
-finding fails the build. Fix a finding by extracting named helpers, never by
-raising the threshold. A Whitaker suite installed before the lint existed
-(v0.2.12 or earlier) does not register it and silently leaves the gate
-inactive, so rerun `whitaker-installer` to refresh the suite after updating a
-checkout.
+with `experimental = ["macro_aware_cognitive_complexity"]` in its `[whitaker]`
+table, and `make lint-rust` runs Whitaker from that directory with
+`-D warnings`, so a finding fails the build. Fix a finding by extracting named
+helpers, never by raising the threshold. A Whitaker suite installed before the
+lint existed (v0.2.12 or earlier) does not register it and silently leaves the
+gate inactive, so rerun `whitaker-installer` to refresh the suite after
+updating a checkout.
 
 ## Docstring coverage
 
