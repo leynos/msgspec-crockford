@@ -13,8 +13,10 @@ MDTABLEFIX ?= mdtablefix
 MDTABLEFIX_SELECT = --git --include-untracked
 MDTABLEFIX_RULES = --wrap --renumber --breaks --ellipsis --fences
 NIXIE ?= nixie
-TYPOS_VERSION ?= 1.48.0
-TYPOS = env $(UV_ENV) $(UV) tool run typos@$(TYPOS_VERSION)
+TYPOS_CONFIG_BUILDER_VERSION ?= v0.1.4
+TYPOS_CONFIG_BUILDER = $(UV_ENV) $(UV) tool run --python 3.14 --from \
+	"git+https://github.com/leynos/typos-config-builder.git@$(TYPOS_CONFIG_BUILDER_VERSION)" \
+	typos-config-builder
 export PATH := $(HOME)/.local/bin:$(HOME)/.bun/bin:$(PATH)
 UV ?= $(shell command -v uv 2>/dev/null || printf '%s/.local/bin/uv' "$$HOME")
 USER_CARGO := $(HOME)/.cargo/bin/cargo
@@ -28,7 +30,7 @@ PYTHON_TARGETS ?= msgspec_crockford
 # Docstring presence over every Python directory the repository owns. Add a new
 # Python directory here; interrogate skips some path prefixes by default, so check
 # a new file against the verbose report.
-INTERROGATE_TARGETS ?= $(PYTHON_TARGETS) docs/source pycrockford_rs scripts
+INTERROGATE_TARGETS ?= $(PYTHON_TARGETS) docs/source pycrockford_rs
 # Level 2 prints a MISSED row per undocumented definition, which the
 # `interrogate` target fails on: the rounded percentage alone can pass a lone gap.
 INTERROGATE_FLAGS ?= -vv --fail-under 100
@@ -190,10 +192,10 @@ markdownlint: $(MDLINT) ## Lint Markdown files
 	env -u NO_COLOR $(MDLINT) '**/*.md'
 	+$(MAKE) spelling
 
-spelling: ## Enforce en-GB-oxendict spelling in Markdown prose
-	$(UV_ENV) $(UV) run scripts/generate_typos_config.py
-	find . -type f -name '*.md' -not -path './target/*' -print0 | \
-		xargs -0 -r $(TYPOS) --config typos.toml --force-exclude
+# The gate reads tracked files only, so stage new Markdown files before running
+# this target; untracked files are not checked.
+spelling: ## Enforce en-GB-oxendict spelling in prose
+	$(TYPOS_CONFIG_BUILDER) gate --repository .
 
 nixie: ## Validate Mermaid diagrams
 	$(call ensure_tool,$(NIXIE))
