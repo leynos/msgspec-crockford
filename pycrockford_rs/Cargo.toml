@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 data-encoding = "2"
-pyo3 = { version = "0.29", features = ["extension-module", "abi3-py310"] }
+pyo3 = { version = "0.30", features = ["extension-module", "abi3-py310"] }
 uuid = { version = "1", features = ["v4", "v7"] }
 
 [lints.rust]
